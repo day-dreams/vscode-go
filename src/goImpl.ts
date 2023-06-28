@@ -13,13 +13,6 @@ import { toolExecutionEnvironment } from './goEnv';
 import { promptForMissingTool } from './goInstallTools';
 import { getBinPath } from './util';
 import vscode = require('vscode');
-import { debounce } from 'lodash';
-
-class InterfaceItem implements vscode.QuickPickItem {
-	public label: string;
-	public description: string;
-	public name: string;
-	public package: string;
 
 	constructor(symbol: vscode.SymbolInformation) {
 		this.label = symbol.name;
@@ -29,52 +22,34 @@ class InterfaceItem implements vscode.QuickPickItem {
 	}
 }
 
-export function implCursor() {
+export const implCursor: CommandFactory = () => () => {
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
 		vscode.window.showErrorMessage('No active editor found.');
 		return;
 	}
 	const cursor = editor.selection;
-	const quickPick = vscode.window.createQuickPick();
-	quickPick.placeholder = 'Input interface name (e.g. Client)';
+	return vscode.window
+		.showInputBox({
+			placeHolder: 'f *File io.Closer',
+			prompt: 'Enter receiver and interface to implement.'
+		})
+		.then((implInput) => {
+			if (typeof implInput === 'undefined') {
+				return;
+			}
+			const matches = implInput.match(inputRegex);
+			if (!matches) {
+				vscode.window.showInformationMessage(`Not parsable input: ${implInput}`);
+				return;
+			}
 
-	const search = function (keyword: string) {
-		quickPick.busy = true;
-		vscode.commands
-			.executeCommand<vscode.SymbolInformation[]>('vscode.executeWorkspaceSymbolProvider', keyword)
-			.then((symbols) => {
-				if (symbols === undefined) {
-					return;
-				}
+			// TODO: automatically detect type name at cursor
+			// if matches[1] is undefined then detect receiver type
+			// take first character and use as receiver name
 
-				quickPick.items = symbols
-					.filter((symbol) => symbol.kind === vscode.SymbolKind.Interface)
-					.map((symbol) => {
-						return new InterfaceItem(symbol);
-					});
-			});
-
-		quickPick.busy = false;
-	};
-
-	quickPick.onDidChangeValue(debounce(search, 250));
-
-	quickPick.onDidChangeSelection((selections: readonly vscode.QuickPickItem[]) => {
-		if (typeof selections === 'undefined') {
-			return;
-		}
-		console.debug('onDidChangeSelection ', selections);
-		const item = selections[0];
-		if (item instanceof InterfaceItem) {
-			console.debug(item);
-			runGoImpl(['ReceiverName__ *Receiver__', item.package + '.' + item.name], cursor.start, editor);
-		}
-	});
-
-	quickPick.show();
-
-	return;
+			runGoImpl([matches[1], matches[2]], cursor.start, editor);
+		});
 }
 
 function runGoImpl(args: string[], insertPos: vscode.Position, editor: vscode.TextEditor) {
@@ -104,6 +79,6 @@ function runGoImpl(args: string[], insertPos: vscode.Position, editor: vscode.Te
 		}
 	);
 	if (p.pid) {
-		p.stdin.end();
+		p.stdin?.end();
 	}
 }
