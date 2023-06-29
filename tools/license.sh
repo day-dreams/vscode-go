@@ -56,6 +56,7 @@ NG=$(echo "${ALL_LICENSES}" | jq '
   "(MIT OR Apache-2.0)": 1,
   "(MIT AND Zlib)": 1,
   "(MIT AND BSD-3-Clause)": 1,
+<<<<<<< HEAD
   "Python-2.0": 1,
 } as $allowed_licenses |
 {
@@ -65,6 +66,17 @@ NG=$(echo "${ALL_LICENSES}" | jq '
 {
   "json-schema@0.2.3": 1,
 >>>>>>> origin/dev.go2go
+=======
+  "(BSD-2-Clause OR MIT OR Apache-2.0)": 1,
+  "CC-BY-3.0": 1,
+  "CC-BY-4.0": 1,
+  "CC0-1.0": 1,
+  "(MIT OR CC0-1.0)": 1,
+} as $allowed_licenses |
+{
+  "json-schema@0.2.3": 1,
+  "buffers@0.1.1": 1,   # MIT
+>>>>>>> origin/release
 } as $allow_list |
 .[] | select(.license | in($allowed_licenses) | not)
 | select((.name+"@"+.version) | in($allow_list) | not) ')

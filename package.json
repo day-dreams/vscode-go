@@ -2,13 +2,8 @@
 <<<<<<< HEAD
   "name": "go",
   "displayName": "Go",
-  "version": "0.39.0-dev",
+  "version": "0.26.0-dev",
   "preview": true,
-=======
-  "name": "go2go",
-  "displayName": "Go (go2go)",
-  "version": "0.0.0",
->>>>>>> origin/dev.go2go
   "publisher": "golang",
   "description": "Rich Go language support for Visual Studio Code",
   "author": {
@@ -201,19 +196,12 @@
         ]
       },
       {
-        "id": "gotmpl",
+        "id": "tmpl",
         "extensions": [
-          ".tmpl",
-          ".gotmpl"
+          ".tmpl"
         ],
         "aliases": [
           "Go Template File"
-        ]
-      },
-      {
-        "id": "govulncheck",
-        "aliases": [
-          "Govulncheck Output"
         ]
       }
     ],

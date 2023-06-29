@@ -41,6 +41,7 @@ import {
 	Tool,
 	ToolAtVersion
 } from './goTools';
+import { getFromWorkspaceState } from './stateUtils';
 import {
 	getBinPath,
 	getBinPathWithExplanation,

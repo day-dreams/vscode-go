@@ -8,6 +8,7 @@
 provides rich language support for the
 [Go programming language](https://golang.org/).
 
+<<<<<<< HEAD
 📣
 [Remote attach debugging](https://github.com/golang/vscode-go/wiki/debugging#connecting-to-headless-delve-with-target-specified-at-server-start-up) is now available via Delve's native DAP implementation with Delve v1.7.3 or newer. It enchances remote debugging with the same
 [debugging features](https://github.com/golang/vscode-go/wiki/debugging) that are already in use for local debugging. It is now the default with the
@@ -17,6 +18,10 @@ We recommend switching your remote attach configurations in `launch.json` to use
 Please [file a new issue](https://github.com/golang/vscode-go/issues/new/choose) if you encounter any problems.
 
 📣📣 Watch [Debugging Treasure Hunt](https://youtu.be/ZPIPPRjwg7Q) from [GopherCon 2021](https://www.gophercon.com/) for a fun take on a debugging demo with VS Code Go and Delve DAP.
+=======
+> 📣 Debugging using [`Delve`'s native DAP implementation](https://github.com/golang/vscode-go/blob/master/docs/dlv-dap.md) is now available for use.<br>
+> Please test it by following [the instruction to enable this new feature](https://github.com/golang/vscode-go/blob/master/docs/dlv-dap.md#getting-started) and share your feedback!
+>>>>>>> origin/release
 
 ## Quick Start
 
