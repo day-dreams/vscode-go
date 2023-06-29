@@ -1,7 +1,12 @@
+<<<<<<< HEAD
 /* eslint-disable no-process-exit */
 /* eslint-disable node/no-unpublished-import */
 import * as path from 'path';
 import { runTests } from '@vscode/test-electron';
+=======
+import * as path from 'path';
+import { runTests } from 'vscode-test';
+>>>>>>> origin/dev.go2go
 
 async function main() {
 	// We are in test mode.

@@ -13,7 +13,11 @@ import { getGoConfig } from './config';
 import { toolExecutionEnvironment } from './goEnv';
 import { getFormatTool } from './language/legacy/goFormat';
 import { installTools } from './goInstallTools';
+<<<<<<< HEAD
 import { outputChannel } from './goStatus';
+=======
+import { envPath, fixDriveCasingInWindows, getCurrentGoRoot } from './goPath';
+>>>>>>> origin/dev.go2go
 import { getTool } from './goTools';
 import { getFromGlobalState, updateGlobalState } from './stateUtils';
 import { getBinPath, getGoVersion, getModuleCache, getWorkspaceFolderPath } from './util';
@@ -25,7 +29,11 @@ export async function runGoEnv(uri?: vscode.Uri, envvars: string[] = []): Promis
 	const goExecutable = getBinPath('go');
 	if (!goExecutable) {
 		console.warn(
+<<<<<<< HEAD
 			`Failed to run "go env GOMOD" to find mod file as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${getEnvPath()})`
+=======
+			`Failed to run "go env GOMOD" to find mod file as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${envPath})`
+>>>>>>> origin/dev.go2go
 		);
 		return {};
 	}
@@ -78,10 +86,33 @@ export async function getModFolderPath(fileuri?: vscode.Uri, isDir?: boolean): P
 	if (goModEnvResult) {
 		goModEnvResult = path.dirname(goModEnvResult);
 		const goConfig = getGoConfig(fileuri);
+<<<<<<< HEAD
 		if (goConfig['useLanguageServer'] === false && getFormatTool(goConfig) === 'goreturns') {
 			const promptFormatToolMsg =
 				'The goreturns tool does not support Go modules. Please update the "formatTool" setting to "goimports".';
 			promptToUpdateToolForModules('switchFormatToolToGoimports', promptFormatToolMsg, goConfig);
+=======
+
+		if (goConfig['inferGopath'] === true) {
+			goConfig.update('inferGopath', false, vscode.ConfigurationTarget.WorkspaceFolder);
+			vscode.window.showInformationMessage(
+				'The "inferGopath" setting is disabled for this workspace because Go modules are being used.'
+			);
+		}
+
+		// TODO(rstambler): This will offer multiple prompts to the user, but
+		// it's still better than waiting for user input. Ideally, this should
+		// be combined into one prompt.
+		if (goConfig['useLanguageServer'] === false) {
+			const promptMsg =
+				'For better performance using Go modules, you can try the experimental Go language server, gopls.';
+			promptToUpdateToolForModules('gopls', promptMsg, goConfig);
+
+			if (goConfig['formatTool'] === 'goreturns') {
+				const promptMsgForFormatTool = `The goreturns tool does not support Go modules. Please update the "formatTool" setting to goimports.`;
+				promptToUpdateToolForModules('switchFormatToolToGoimports', promptMsgForFormatTool, goConfig);
+			}
+>>>>>>> origin/dev.go2go
 		}
 	}
 	packagePathToGoModPathMap[pkgPath] = goModEnvResult;
@@ -160,7 +191,11 @@ export async function getCurrentPackage(cwd: string): Promise<string> {
 	const goRuntimePath = getBinPath('go');
 	if (!goRuntimePath) {
 		console.warn(
+<<<<<<< HEAD
 			`Failed to run "go list" to find current package as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${getEnvPath()})`
+=======
+			`Failed to run "go list" to find current package as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${envPath})`
+>>>>>>> origin/dev.go2go
 		);
 		return '';
 	}

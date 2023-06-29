@@ -8,15 +8,26 @@
 
 'use strict';
 
+import cp = require('child_process');
 import fs = require('fs');
 import path = require('path');
+<<<<<<< HEAD
+=======
+import util = require('util');
+>>>>>>> origin/dev.go2go
 import vscode = require('vscode');
 import { CommandFactory } from './commands';
 import { getGoConfig } from './config';
 import { isModSupported } from './goModules';
+<<<<<<< HEAD
 import { getImportPathToFolder } from './goPackages';
 import { getTestFlags, goTest, showTestOutput, TestConfig } from './testUtils';
 import { fixDriveCasingInWindows } from './utils/pathUtils';
+=======
+import { envPath } from './goPath';
+import { getTestFlags, goTest, showTestOutput, TestConfig } from './testUtils';
+import { getBinPath, getCurrentGoPath, getGoConfig, getWorkspaceFolderPath } from './util';
+>>>>>>> origin/dev.go2go
 
 let gutterSvgs: { [key: string]: string };
 
@@ -83,9 +94,14 @@ export function initCoverageDecorators(ctx: vscode.ExtensionContext) {
 export function updateCodeCoverageDecorators(coverageDecoratorConfig: any) {
 	// These defaults are chosen to be distinguishable in nearly any color scheme (even Red)
 	// as well as by people who have difficulties with color perception.
+<<<<<<< HEAD
 	// It appears that the contributions in package.json are only used to check what users
 	// put in settings.json, while the defaults come from the defaults section of
 	// go.coverageDecorator in package.json.
+=======
+	// (how do these relate the defaults in package.json?)
+	// and where do the defaults actually come from? (raised as issue #256)
+>>>>>>> origin/dev.go2go
 	decoratorConfig = {
 		type: 'highlight',
 		coveredHighlightColor: 'rgba(64,128,128,0.5)',
@@ -189,6 +205,7 @@ interface CoverageData {
 	coveredOptions: vscode.DecorationOptions[];
 }
 
+<<<<<<< HEAD
 let coverageData: { [key: string]: CoverageData } = {}; // actual file path to the coverage data.
 let isCoverageApplied = false;
 
@@ -198,12 +215,24 @@ function emptyCoverageData(): CoverageData {
 		coveredOptions: []
 	};
 }
+=======
+let coverageFiles: { [key: string]: CoverageData } = {};
+let coveragePath = new Map<string, CoverageData>();
+let pathsToDirs = new Map<string, string>();
+let isCoverageApplied: boolean = false;
+>>>>>>> origin/dev.go2go
 
 /**
  * Clear the coverage on all files
  */
 function clearCoverage() {
+<<<<<<< HEAD
 	coverageData = {};
+=======
+	coverageFiles = {};
+	coveragePath = new Map<string, CoverageData>();
+	pathsToDirs = new Map<string, string>();
+>>>>>>> origin/dev.go2go
 	disposeDecorators();
 	isCoverageApplied = false;
 }
@@ -212,9 +241,15 @@ function clearCoverage() {
  * Extract the coverage data from the given cover profile & apply them on the files in the open editors.
  * @param coverProfilePath Path to the file that has the cover profile data
  * @param packageDirPath Absolute path of the package for which the coverage was calculated
+<<<<<<< HEAD
  * @param dir Directory to execute go list in
  */
 export function applyCodeCoverageToAllEditors(coverProfilePath: string, dir?: string): Promise<void> {
+=======
+ * @param testDir Directory to execute go list in, when there is no workspace, for some tests
+ */
+export function applyCodeCoverageToAllEditors(coverProfilePath: string, testDir?: string): Promise<void> {
+>>>>>>> origin/dev.go2go
 	const v = new Promise<void>((resolve, reject) => {
 		try {
 			const showCounts = getGoConfig().get('coverShowCounts') as boolean;
@@ -228,6 +263,7 @@ export function applyCodeCoverageToAllEditors(coverProfilePath: string, dir?: st
 			// for now read synchronously and hope for no errors
 			const contents = fs.readFileSync(coverProfilePath).toString();
 			contents.split('\n').forEach((line) => {
+<<<<<<< HEAD
 				// go test coverageprofile generates output:
 				//    filename:StartLine.StartColumn,EndLine.EndColumn Hits CoverCount
 				// where the filename is either the import path + '/' + base file name, or
@@ -293,6 +329,38 @@ export function applyCodeCoverageToAllEditors(coverProfilePath: string, dir?: st
 
 			getImportPathToFolder([...seenPaths], dir).then((pathsToDirs) => {
 				createCoverageData(pathsToDirs, coveragePath);
+=======
+				const parse = line.match(/([^:]+)\:([\d]+)\.([\d]+)\,([\d]+)\.([\d]+)\s([\d]+)\s([\d]+)/);
+				if (!parse) { return; }
+				const lastSlash = parse[1].lastIndexOf('/'); // ok for windows?
+				if (lastSlash !== -1) {
+					seenPaths.add(parse[1].slice(0, lastSlash));
+				}
+
+				// and fill in coveragePath
+				const coverage = getPathData(parse[1]);
+				const range = new vscode.Range(
+					// Start Line converted to zero based
+					parseInt(parse[2], 10) - 1,
+					// Start Column converted to zero based
+					parseInt(parse[3], 10) - 1,
+					// End Line converted to zero based
+					parseInt(parse[4], 10) - 1,
+					// End Column converted to zero based
+					parseInt(parse[5], 10) - 1
+				);
+				// If is Covered (CoverCount > 0)
+				if (parseInt(parse[7], 10) > 0) {
+					coverage.coveredRange.push(range);
+				} else {
+					coverage.uncoveredRange.push(range);
+				}
+				setPathData(parse[1], coverage);
+			});
+			const pathPromise = getPathsToDirs(seenPaths, pathsToDirs, testDir);
+			pathPromise.then(() => {
+				createCoverageData();
+>>>>>>> origin/dev.go2go
 				setDecorators();
 				vscode.window.visibleTextEditors.forEach(applyCodeCoverage);
 				resolve();
@@ -346,6 +414,33 @@ function createCoverageData(pathsToDirs: Map<string, string>, coveragePath: Map<
 		const fileDir = pathsToDirs.get(maybePkgPath) || path.resolve(maybePkgPath);
 		const file = fileDir + path.sep + ip.slice(lastSlash + 1);
 		setCoverageDataByFilePath(file, cd);
+	});
+}
+
+/**
+ * Get the CoverageData for an import path.
+ * @param importPath
+ */
+function getPathData(importPath: string): CoverageData {
+	return coveragePath.get(importPath) || { coveredRange: [], uncoveredRange: [] };
+}
+
+/**
+ * Set the CoverageData for an import path.
+ * @param importPath
+ * @param data
+ */
+function setPathData(importPath: string, data: CoverageData) {
+	coveragePath.set(importPath, data);
+}
+
+function createCoverageData() {
+	coveragePath.forEach((cd, ip) => {
+		const lastSlash = ip.lastIndexOf('/');
+		const importPath = ip.slice(0, lastSlash);
+		const fileDir = pathsToDirs.get(importPath);
+		const file = fileDir + ip.slice(lastSlash); // what about Windows?
+		setCoverageData(file, cd);
 	});
 }
 
@@ -499,6 +594,41 @@ export function trackCodeCoverageRemovalOnFileChange(e: vscode.TextDocumentChang
 }
 
 /**
+ * Fill the map of directory paths corresponding to input package paths
+ * @param set Set<string> of import package paths
+ */
+async function getPathsToDirs(set: Set<string>, res: Map<string, string>, testDir?: string) {
+	const goRuntimePath = getBinPath('go');
+	if (!goRuntimePath) {
+		vscode.window.showErrorMessage(
+			`Failed to run, as the "go" binary cannot be found in either GOROOT(${process.env['GOROOT']}) or PATH(${envPath})`
+		);
+	}
+	const args: string[] = ['list', '-f', '{{.ImportPath}}:{{.Dir}}'];
+	set.forEach((s) => args.push(s));
+
+	const options: { [key: string]: any } = {
+		env: Object.assign({}, process.env, { GOPATH: getCurrentGoPath() })
+	};
+	const workDir = getWorkspaceFolderPath();
+	// If there is a workDir then probably it is what we want
+	// Otherwise maybe a test suggested a directory.
+	if (workDir) {
+		options['cwd'] = workDir;
+	} else if (testDir) {
+		options['cwd'] = testDir;
+	}
+
+	const execFile = util.promisify(cp.execFile);
+	const { stdout } = await execFile(goRuntimePath, args, options);
+	stdout.split('\n').forEach((line) => {
+		const flds = line.split(':');
+		if (flds.length !== 2) { return; }
+		res.set(flds[0], flds[1]);
+	});
+}
+
+/**
  * If current editor has Code coverage applied, then remove it.
  * Else run tests to get the coverage and apply.
  */
@@ -551,8 +681,13 @@ export function isPartOfComment(e: vscode.TextDocumentChangeEvent): boolean {
 
 // These routines enable testing without starting an editing session.
 
+<<<<<<< HEAD
 export function coverageFilesForTest(): { [key: string]: CoverageData } {
 	return coverageData;
+=======
+export function coverageFilesForTest():  { [key: string]: CoverageData; } {
+	return coverageFiles;
+>>>>>>> origin/dev.go2go
 }
 
 export function initForTest() {
@@ -567,8 +702,11 @@ export function initForTest() {
 			type: 'highlight',
 			coveredHighlightColor: x,
 			uncoveredHighlightColor: x,
+<<<<<<< HEAD
 			coveredBorderColor: x,
 			uncoveredBorderColor: x,
+=======
+>>>>>>> origin/dev.go2go
 			coveredGutterStyle: x,
 			uncoveredGutterStyle: x
 		};

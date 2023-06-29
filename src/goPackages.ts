@@ -10,6 +10,7 @@ import path = require('path');
 import { promisify } from 'util';
 import vscode = require('vscode');
 import { toolExecutionEnvironment } from './goEnv';
+<<<<<<< HEAD
 import { getBinPath, getCurrentGoPath } from './util';
 import {
 	getEnvPath,
@@ -17,6 +18,11 @@ import {
 	getCurrentGoRoot,
 	getCurrentGoWorkspaceFromGOPATH
 } from './utils/pathUtils';
+=======
+import { promptForMissingTool, promptForUpdatingTool } from './goInstallTools';
+import { envPath, fixDriveCasingInWindows, getCurrentGoRoot, getCurrentGoWorkspaceFromGOPATH } from './goPath';
+import { getBinPath, getCurrentGoPath, getGoVersion, isVendorSupported } from './util';
+>>>>>>> origin/dev.go2go
 
 type GoListPkgsDone = (res: Map<string, PackageInfo>) => void;
 interface Cache {
@@ -75,6 +81,7 @@ async function goListPkgs(workDir?: string): Promise<Map<string, PackageInfo>> {
 			if (!pkgDetail || !pkgDetail.trim() || pkgDetail.indexOf(';') === -1) {
 				return;
 			}
+<<<<<<< HEAD
 			const [pkgName, pkgPath, pkgDir] = pkgDetail.trim().split(';');
 			const pkgDirNormalized = fixDriveCasingInWindows(pkgDir);
 			// goListPkgs are used to retrieve packages importable from packages under workDir.
@@ -88,6 +95,42 @@ async function goListPkgs(workDir?: string): Promise<Map<string, PackageInfo>> {
 					// Both workDir (from vscode file path) and pkgDir (from go list -f {{.Dir}}) are absolute.
 					!workDir.startsWith(pkgDirNormalized.substring(0, vendorIdx))
 				) {
+=======
+
+			const errorMsg = errchunks.join('').trim() || (err && err.message);
+			if (errorMsg) {
+				if (errorMsg.startsWith('flag provided but not defined: -workDir')) {
+					promptForUpdatingTool('gopkgs');
+					// fallback to gopkgs without -workDir
+					return gopkgs().then((result) => resolve(result));
+				}
+
+				console.log(
+					`Running gopkgs failed with "${errorMsg}"\nCheck if you can run \`gopkgs -format {{.Name}};{{.ImportPath}}\` in a terminal successfully.`
+				);
+				return resolve(pkgs);
+			}
+			const goroot = getCurrentGoRoot();
+			const output = chunks.join('');
+			if (output.indexOf(';') === -1) {
+				// User might be using the old gopkgs tool, prompt to update
+				promptForUpdatingTool('gopkgs');
+				output.split('\n').forEach((pkgPath) => {
+					if (!pkgPath || !pkgPath.trim()) {
+						return;
+					}
+					const index = pkgPath.lastIndexOf('/');
+					const pkgName = index === -1 ? pkgPath : pkgPath.substr(index + 1);
+					pkgs.set(pkgPath, {
+						name: pkgName,
+						isStd: !pkgPath.includes('.')
+					});
+				});
+				return resolve(pkgs);
+			}
+			output.split('\n').forEach((pkgDetail) => {
+				if (!pkgDetail || !pkgDetail.trim() || pkgDetail.indexOf(';') === -1) {
+>>>>>>> origin/dev.go2go
 					return;
 				}
 			}
@@ -268,7 +311,11 @@ export function getImportPathToFolder(targets: string[], cwd?: string): Promise<
 	const goRuntimePath = getBinPath('go');
 	if (!goRuntimePath) {
 		console.warn(
+<<<<<<< HEAD
 			`Failed to run "go list" to find packages as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) PATH(${getEnvPath()})`
+=======
+			`Failed to run "go list" to find packages as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) PATH(${envPath})`
+>>>>>>> origin/dev.go2go
 		);
 		return Promise.resolve(new Map());
 	}

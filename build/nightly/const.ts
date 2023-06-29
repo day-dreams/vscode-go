@@ -6,4 +6,4 @@
 
 // This file contains constants that replace constants defined in src/const.ts when building Nightly
 
-export const extensionId: string = 'golang.go-nightly';
+export const extensionId: string = 'golang.go2go';

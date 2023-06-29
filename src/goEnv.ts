@@ -6,11 +6,15 @@
 'use strict';
 
 import vscode = require('vscode');
+<<<<<<< HEAD
 import { getGoConfig } from './config';
 import { getCurrentGoPath, getToolsGopath, resolvePath } from './util';
 import { logVerbose } from './goLogging';
 import { dirExists } from './utils/pathUtils';
 import { getFromGlobalState, updateGlobalState } from './stateUtils';
+=======
+import { getCurrentGoPath, getGoConfig, getToolsGopath } from './util';
+>>>>>>> origin/dev.go2go
 
 // toolInstallationEnvironment returns the environment in which tools should
 // be installed. It always returns a new object.

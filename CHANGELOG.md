@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## v0.39.0 - 12 Jun, 2023
 
 We are in the process of removing legacy language features that were replaced by `gopls` since early 2021. The versions released after September 2023 will no longer offer features like code completion, navigation, documentation, formatting, and refactoring if the language server is disabled. In this release, we are showing deprecation notification messages if you are using the legacy language features. ([Issue 2799](https://github.com/golang/vscode-go/issues/2799))
@@ -1131,6 +1132,8 @@ Thank you for your contribution, fujimoto kyosuke, OneOfOne, Aditya Thakral, Ole
 
 - Do not fail tools installation when gocode is not already running ([Issue 355](https://github.com/golang/vscode-go/issues/355)).
 
+=======
+>>>>>>> origin/dev.go2go
 ## v0.15.1 - 7th July, 2020
 
 ### Enhancement
@@ -1182,6 +1185,7 @@ Thank you for your contribution, fujimoto kyosuke, OneOfOne, Aditya Thakral, Ole
 
 Thank you for your contribution, Brayden Cloud, Bulent Rahim Kazanci, Eli Bendersky, Hana Kim, Polina Sokolova, Quoc Truong, Rebecca Stambler, Rohan Talip, Ryan Koski, Sean Caffery, Ted Silbernagel, Vincent Jo, and codekid!
 
+<<<<<<< HEAD
 ## 0.14.4 - 8th June, 2020
 
 This is the first version published with `golang` publisher ID. This version is functionally identical to 0.14.3 except the following modifications.
@@ -1191,6 +1195,8 @@ This is the first version published with `golang` publisher ID. This version is 
 
 * [Hyang-Ah Hana Kim (@hyangah)](https://github.com/hyangah)
     * Remove old telemetry code.
+=======
+>>>>>>> origin/dev.go2go
 
 ## 0.14.3 - 21st May, 2020
 

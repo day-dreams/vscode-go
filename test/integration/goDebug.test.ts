@@ -23,7 +23,11 @@ import {
 	escapeGoModPath,
 	GoDebugSession,
 	PackageBuildInfo,
+<<<<<<< HEAD
 	RemoteSourcesAndPackages
+=======
+	RemoteSourcesAndPackages,
+>>>>>>> origin/dev.go2go
 } from '../../src/debugAdapter/goDebug';
 import * as extConfig from '../../src/config';
 import { GoDebugConfigurationProvider, parseDebugProgramArgSync } from '../../src/goDebugConfiguration';

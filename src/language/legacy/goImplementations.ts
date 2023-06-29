@@ -9,12 +9,26 @@
 import cp = require('child_process');
 import path = require('path');
 import vscode = require('vscode');
+<<<<<<< HEAD:src/language/legacy/goImplementations.ts
 import { getGoConfig } from '../../config';
 import { toolExecutionEnvironment } from '../../goEnv';
 import { promptForMissingTool } from '../../goInstallTools';
 import { byteOffsetAt, canonicalizeGOPATHPrefix, getBinPath, getWorkspaceFolderPath } from '../../util';
 import { getEnvPath, getCurrentGoRoot } from '../../utils/pathUtils';
 import { killProcessTree } from '../../utils/processUtils';
+=======
+import { toolExecutionEnvironment } from './goEnv';
+import { promptForMissingTool } from './goInstallTools';
+import { envPath, getCurrentGoRoot } from './goPath';
+import {
+	byteOffsetAt,
+	canonicalizeGOPATHPrefix,
+	getBinPath,
+	getGoConfig,
+	getWorkspaceFolderPath,
+	killTree,
+} from './util';
+>>>>>>> origin/dev.go2go:src/goImplementations.ts
 
 interface GoListOutput {
 	Dir: string;
@@ -53,7 +67,11 @@ export class GoImplementationProvider implements vscode.ImplementationProvider {
 		const goRuntimePath = getBinPath('go');
 		if (!goRuntimePath) {
 			vscode.window.showErrorMessage(
+<<<<<<< HEAD:src/language/legacy/goImplementations.ts
 				`Failed to run "go list" to get the scope to find implementations as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${getEnvPath()})`
+=======
+				`Failed to run "go list" to get the scope to find implementations as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${envPath})`
+>>>>>>> origin/dev.go2go:src/goImplementations.ts
 			);
 			return;
 		}

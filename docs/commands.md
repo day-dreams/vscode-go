@@ -242,6 +242,7 @@ Restart the running instance of the language server
 ### `Go: Choose Go Environment`
 
 Choose a different Go version or binary for this project. (WIP)
+<<<<<<< HEAD
 
 ### `Go: Show Survey Configuration`
 
@@ -274,3 +275,5 @@ Edit the Go Env for the active workspace.
 ### `Go: Reset Workspace Env`
 
 Reset the Go Env for the active workspace.
+=======
+>>>>>>> origin/dev.go2go

@@ -14,6 +14,10 @@ import { toolExecutionEnvironment } from './goEnv';
 import { promptForMissingTool } from './goInstallTools';
 import { documentSymbols, GoOutlineImportsOptions } from './language/legacy/goOutline';
 import { getImportablePackages } from './goPackages';
+<<<<<<< HEAD
+=======
+import { envPath, getCurrentGoRoot } from './goPath';
+>>>>>>> origin/dev.go2go
 import { getBinPath, getImportPath, parseFilePrelude } from './util';
 import { getEnvPath, getCurrentGoRoot } from './utils/pathUtils';
 import { GoExtensionContext } from './context';
@@ -251,7 +255,11 @@ export const addImportToWorkspace: CommandFactory = () => () => {
 	const goRuntimePath = getBinPath('go');
 	if (!goRuntimePath) {
 		vscode.window.showErrorMessage(
+<<<<<<< HEAD
 			`Failed to run "go list" to find the package as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${getEnvPath()})`
+=======
+			`Failed to run "go list" to find the package as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${envPath})`
+>>>>>>> origin/dev.go2go
 		);
 		return;
 	}

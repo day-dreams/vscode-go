@@ -19,6 +19,7 @@ import sinon = require('sinon');
 import url = require('url');
 import util = require('util');
 import vscode = require('vscode');
+<<<<<<< HEAD
 import { allToolsInformation } from '../../src/goToolsInformation';
 import * as goInstallTools from '../../src/goInstallTools';
 import * as utilModule from '../../src/util';
@@ -32,19 +33,35 @@ interface installationTestCase {
 suite('Installation Tests', function () {
 	// Disable timeout when we are running slow tests.
 	let timeout = 60000;
+=======
+import { toolInstallationEnvironment } from '../../src/goEnv';
+import { installTools } from '../../src/goInstallTools';
+import { allToolsInformation, getTool, getToolAtVersion } from '../../src/goTools';
+import { getBinPath, getGoVersion, rmdirRecursive } from '../../src/util';
+
+suite('Installation Tests', function () {
+	// Disable timeout when we are running slow tests.
+	let timeout = 10000;
+>>>>>>> origin/dev.go2go
 	if (shouldRunSlowTests()) {
 		timeout = 0;
 	}
 	this.timeout(timeout);
 
 	let tmpToolsGopath: string;
+<<<<<<< HEAD
 	let tmpToolsGopath2: string;
 	let sandbox: sinon.SinonSandbox;
 	let toolsGopath: string;
+=======
+	let sandbox: sinon.SinonSandbox;
+	let toolsGopathStub: sinon.SinonStub;
+>>>>>>> origin/dev.go2go
 
 	setup(() => {
 		// Create a temporary directory in which to install tools.
 		tmpToolsGopath = fs.mkdtempSync(path.join(os.tmpdir(), 'install-test'));
+<<<<<<< HEAD
 
 		// a temporary directory to be used as the second GOPATH element.
 		tmpToolsGopath2 = fs.mkdtempSync(path.join(os.tmpdir(), 'install-test2'));
@@ -54,11 +71,22 @@ suite('Installation Tests', function () {
 		sandbox = sinon.createSandbox();
 	});
 
+=======
+		fs.mkdirSync(path.join(tmpToolsGopath, 'bin'));
+		fs.mkdirSync(path.join(tmpToolsGopath, 'src'));
+
+		sandbox = sinon.createSandbox();
+		const utils = require('../../src/util');
+		toolsGopathStub = sandbox.stub(utils, 'getToolsGopath').returns(tmpToolsGopath);
+	});
+
+>>>>>>> origin/dev.go2go
 	teardown(async () => {
 		sandbox.restore();
 
 		// Clean up the temporary GOPATH. To delete the module cache, run `go clean -modcache`.
 		const goRuntimePath = getBinPath('go');
+<<<<<<< HEAD
 		for (const p of [tmpToolsGopath, tmpToolsGopath2]) {
 			const envForTest = Object.assign({}, process.env);
 			envForTest['GOPATH'] = p;
@@ -73,10 +101,20 @@ suite('Installation Tests', function () {
 				console.log(`failed to clean module cache directory: ${e}`);
 			}
 		}
+=======
+		const envForTest = Object.assign({}, process.env);
+		envForTest['GOPATH'] = tmpToolsGopath;
+		const execFile = util.promisify(cp.execFile);
+		await execFile(goRuntimePath, ['clean', '-modcache'], {
+			env: envForTest,
+		});
+		rmdirRecursive(tmpToolsGopath);
+>>>>>>> origin/dev.go2go
 	});
 
 	// runTest actually executes the logic of the test.
 	// If withLocalProxy is true, the test does not require internet.
+<<<<<<< HEAD
 	// If withGOBIN is true, the test will set GOBIN env var.
 	async function runTest(
 		testCases: installationTestCase[],
@@ -90,6 +128,13 @@ suite('Installation Tests', function () {
 		let configStub: sinon.SinonStub;
 		if (withLocalProxy) {
 			proxyDir = buildFakeProxy(testCases);
+=======
+	async function runTest(testCases: string[], withLocalProxy?: boolean) {
+		let proxyDir: string;
+		let configStub: sinon.SinonStub;
+		if (withLocalProxy) {
+			proxyDir = buildFakeProxy([].concat(...testCases));
+>>>>>>> origin/dev.go2go
 			const goConfig = Object.create(vscode.workspace.getConfiguration('go'), {
 				toolsEnvVars: {
 					value: {
@@ -103,6 +148,7 @@ suite('Installation Tests', function () {
 				},
 				gopath: { value: toolsGopath }
 			});
+<<<<<<< HEAD
 			configStub = sandbox.stub(config, 'getGoConfig').returns(goConfig);
 		} else {
 			const goConfig = Object.create(vscode.workspace.getConfiguration('go'), {
@@ -124,10 +170,23 @@ suite('Installation Tests', function () {
 
 		const failures = await installTools(missingTools, goVersion);
 		assert(!failures || failures.length === 0, `installTools failed: ${JSON.stringify(failures)}`);
+=======
+			configStub = sandbox.stub(vscode.workspace, 'getConfiguration').returns(goConfig);
+		} else {
+			const env = toolInstallationEnvironment();
+			console.log(`Installing tools using GOPROXY=${env['GOPROXY']}`);
+		}
+
+		// TODO(rstambler): Test with versions as well.
+		const missingTools = testCases.map((tool) => getToolAtVersion(tool));
+		const goVersion = await getGoVersion();
+		await installTools(missingTools, goVersion);
+>>>>>>> origin/dev.go2go
 
 		// Confirm that each expected tool has been installed.
 		const checks: Promise<void>[] = [];
 		const exists = util.promisify(fs.exists);
+<<<<<<< HEAD
 		for (const tc of testCases) {
 			checks.push(
 				new Promise<void>(async (resolve) => {
@@ -158,11 +217,30 @@ suite('Installation Tests', function () {
 			sandbox.assert.calledWith(configStub);
 			// proxyDir should be set when withLocalProxy = true
 			assert(proxyDir);
+=======
+		for (const tool of testCases) {
+			checks.push(new Promise<void>(async (resolve) => {
+				// Check that the expect tool has been installed to $GOPATH/bin.
+				const ok = await exists(path.join(tmpToolsGopath, 'bin', tool));
+				if (!ok) {
+					assert.fail(`expected ${tmpToolsGopath}/bin/${tool}, not found`);
+				}
+				return resolve();
+			}));
+		}
+		await Promise.all(checks);
+
+		sandbox.assert.calledWith(toolsGopathStub);
+
+		if (withLocalProxy) {
+			sandbox.assert.calledWith(configStub);
+>>>>>>> origin/dev.go2go
 			rmdirRecursive(proxyDir);
 		}
 	}
 
 	test('Install one tool with a local proxy', async () => {
+<<<<<<< HEAD
 		await runTest(
 			[
 				{
@@ -223,7 +301,24 @@ suite('Installation Tests', function () {
 			return { name: tool };
 		});
 		await runTest(tools);
+=======
+		await runTest(['gopls'], true);
+>>>>>>> origin/dev.go2go
 	});
+
+	test('Install multiple tools with a local proxy', async () => {
+		await runTest(['gopls', 'guru'], true);
+	});
+
+	test('Install all tools via GOPROXY', async () => {
+		// Only run this test if we are in CI before a Nightly release.
+		if (!shouldRunSlowTests()) {
+			return;
+		}
+		const tools = Object.keys(allToolsInformation);
+		await runTest(tools);
+	});
+
 });
 
 // buildFakeProxy creates a fake file-based proxy used for testing. The code is
@@ -275,6 +370,7 @@ function buildFakeProxy(testCases: installationTestCase[]) {
 function shouldRunSlowTests(): boolean {
 	return !!process.env['VSCODEGO_BEFORE_RELEASE_TESTS'];
 }
+<<<<<<< HEAD
 
 suite('getConfiguredTools', () => {
 	test('do not require legacy tools when using language server', async () => {
@@ -387,3 +483,5 @@ suite('listOutdatedTools', () => {
 		assert.deepStrictEqual(x, ['dlv']);
 	});
 });
+=======
+>>>>>>> origin/dev.go2go

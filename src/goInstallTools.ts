@@ -11,6 +11,7 @@
 import cp = require('child_process');
 import fs = require('fs');
 import path = require('path');
+<<<<<<< HEAD
 import semver = require('semver');
 import { ConfigurationTarget } from 'vscode';
 import { extensionInfo, getGoConfig, getGoplsConfig } from './config';
@@ -19,6 +20,17 @@ import { addGoRuntimeBaseToPATH, clearGoRuntimeBaseFromPATH } from './goEnvironm
 import { logVerbose, logError } from './goLogging';
 import { GoExtensionContext } from './context';
 import { addGoStatus, initGoStatusBar, outputChannel, removeGoStatus } from './goStatus';
+=======
+import { SemVer } from 'semver';
+import util = require('util');
+import vscode = require('vscode');
+import { toolInstallationEnvironment } from './goEnv';
+import { initGoStatusBar } from './goEnvironmentStatus';
+import { getLanguageServerToolPath } from './goLanguageServer';
+import { restartLanguageServer } from './goMain';
+import { envPath, getCurrentGoRoot, getToolFromToolPath, setCurrentGoRoot } from './goPath';
+import { hideGoStatus, outputChannel, showGoStatus } from './goStatus';
+>>>>>>> origin/dev.go2go
 import {
 	containsTool,
 	getConfiguredTools,
@@ -37,7 +49,11 @@ import {
 	getTempFilePath,
 	getWorkspaceFolderPath,
 	GoVersion,
+<<<<<<< HEAD
 	rmdirRecursive
+=======
+	rmdirRecursive,
+>>>>>>> origin/dev.go2go
 } from './util';
 import {
 	correctBinname,
@@ -478,6 +494,7 @@ export async function promptForUpdatingTool(
 	} else {
 		updateMsg = `Your version of ${tool.name} appears to be out of date. Please update for an improved experience.`;
 	}
+<<<<<<< HEAD
 
 	let choices: string[] = ['Update'];
 	if (toolName === 'gopls') {
@@ -589,7 +606,104 @@ export function updateGoVarsFromConfig(goCtx: GoExtensionContext): Promise<void>
 				return resolve();
 			}
 		);
+=======
+	const selected = await vscode.window.showInformationMessage(updateMsg, ...choices);
+	switch (selected) {
+		case 'Update':
+			await installTools([toolVersion], goVersion);
+			break;
+		case 'Release Notes':
+			vscode.commands.executeCommand(
+				'vscode.open',
+				vscode.Uri.parse(`https://github.com/golang/tools/releases/tag/${tool.name}/v${newVersion}`)
+			);
+			break;
+		default:
+			declinedUpdates.push(tool);
+			break;
+	}
+}
+
+export function updateGoVarsFromConfig(): Promise<void> {
+	// FIXIT: when user changes the environment variable settings or go.gopath, the following
+	// condition prevents from updating the process.env accordingly, so the extension will lie.
+	// Needs to clean up.
+	if (process.env['GOPATH'] && process.env['GOPROXY'] && process.env['GOBIN']) {
+		return Promise.resolve();
+	}
+
+	// FIXIT: if updateGoVarsFromConfig is called again after addGoRuntimeBaseToPATH sets PATH,
+	// the go chosen by getBinPath based on PATH will not change.
+	const goRuntimePath = getBinPath('go', false);
+	if (!goRuntimePath) {
+		vscode.window.showErrorMessage(
+			`Failed to run "go env" to find GOPATH as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${envPath})`
+		);
+		return;
+	}
+
+	return new Promise<void>((resolve, reject) => {
+		cp.execFile(goRuntimePath, ['env', 'GOPATH', 'GOROOT', 'GOPROXY', 'GOBIN', 'GOMODCACHE'], (err, stdout, stderr) => {
+			if (err) {
+				return reject();
+			}
+			const envOutput = stdout.split('\n');
+			if (!process.env['GOPATH'] && envOutput[0].trim()) {
+				process.env['GOPATH'] = envOutput[0].trim();
+			}
+			if (envOutput[1] && envOutput[1].trim()) {
+				setCurrentGoRoot(envOutput[1].trim());
+			}
+			if (!process.env['GOPROXY'] && envOutput[2] && envOutput[2].trim()) {
+				process.env['GOPROXY'] = envOutput[2].trim();
+			}
+			if (!process.env['GOBIN'] && envOutput[3] && envOutput[3].trim()) {
+				process.env['GOBIN'] = envOutput[3].trim();
+			}
+			if (!process.env['GOMODCACHE']) {
+				process.env['GOMODCACHE'] = envOutput[4].trim();
+			}
+
+			// cgo, gopls, and other underlying tools will inherit the environment and attempt
+			// to locate 'go' from the PATH env var.
+			addGoRuntimeBaseToPATH(path.join(getCurrentGoRoot(), 'bin'));
+			initGoStatusBar();
+			// TODO: restart language server or synchronize with language server update.
+
+			return resolve();
+		});
+>>>>>>> origin/dev.go2go
 	});
+}
+
+// PATH value cached before addGoRuntimeBaseToPath modified.
+let defaultPathEnv = '';
+
+// addGoRuntimeBaseToPATH adds the given path to the front of the PATH environment variable.
+// It removes duplicates.
+// TODO: can we avoid changing PATH but utilize toolExecutionEnv?
+function addGoRuntimeBaseToPATH(newGoRuntimeBase: string) {
+	if (!newGoRuntimeBase) {
+		return;
+	}
+
+	let pathEnvVar: string;
+	if (process.env.hasOwnProperty('PATH')) {
+		pathEnvVar = 'PATH';
+	} else if (process.platform === 'win32' && process.env.hasOwnProperty('Path')) {
+		pathEnvVar = 'Path';
+	} else {
+		return;
+	}
+
+	if (!defaultPathEnv) {  // cache the default value
+		defaultPathEnv = <string>process.env[pathEnvVar];
+	}
+
+	let pathVars = defaultPathEnv.split(path.delimiter);
+	pathVars = pathVars.filter((p) => p !== newGoRuntimeBase);
+	pathVars.unshift(newGoRuntimeBase);
+	process.env[pathEnvVar] = pathVars.join(path.delimiter);
 }
 
 let alreadyOfferedToInstallTools = false;

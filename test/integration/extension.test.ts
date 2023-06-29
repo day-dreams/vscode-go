@@ -30,6 +30,7 @@ import { goLint } from '../../src/goLint';
 import { documentSymbols, GoOutlineImportsOptions } from '../../src/language/legacy/goOutline';
 import { GoDocumentSymbolProvider } from '../../src/goDocumentSymbols';
 import { goPlay } from '../../src/goPlayground';
+<<<<<<< HEAD
 import { GoSignatureHelpProvider } from '../../src/language/legacy/goSignature';
 import { GoCompletionItemProvider } from '../../src/language/legacy/goSuggest';
 import { getWorkspaceSymbols } from '../../src/language/legacy/goSymbol';
@@ -38,6 +39,16 @@ import {
 	getBinPath,
 	getCurrentGoPath,
 	getGoVersion,
+=======
+import { GoSignatureHelpProvider } from '../../src/goSignature';
+import { GoCompletionItemProvider } from '../../src/goSuggest';
+import { getWorkspaceSymbols } from '../../src/goSymbol';
+import { testCurrentFile } from '../../src/goTest';
+import {
+	getBinPath,
+	getCurrentGoPath,
+	getGoConfig,
+>>>>>>> origin/dev.go2go
 	getImportPath,
 	GoVersion,
 	handleDiagnosticErrors,
@@ -1640,6 +1651,7 @@ const testAll = (isModuleMode: boolean) => {
 		await runFillStruct(ctx, {})(editor);
 		assert.equal(vscode.window.activeTextEditor && vscode.window.activeTextEditor.document.getText(), golden);
 	});
+<<<<<<< HEAD
 };
 
 suite('Go Extension Tests (GOPATH mode)', function () {
@@ -1650,4 +1662,6 @@ suite('Go Extension Tests (GOPATH mode)', function () {
 suite('Go Extension Tests (Module mode)', function () {
 	this.timeout(20000);
 	testAll(true);
+=======
+>>>>>>> origin/dev.go2go
 });

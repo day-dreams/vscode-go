@@ -7,9 +7,12 @@
 
 import path = require('path');
 import vscode = require('vscode');
+<<<<<<< HEAD
 import { CommandFactory } from './commands';
 import { getGoConfig } from './config';
 import { GoExtensionContext } from './context';
+=======
+>>>>>>> origin/dev.go2go
 import { isModSupported } from './goModules';
 import { escapeSubTestName } from './subTestUtils';
 import {

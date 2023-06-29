@@ -9,6 +9,10 @@ import cp = require('child_process');
 import vscode = require('vscode');
 import { CommandFactory } from './commands';
 import { buildCode } from './goBuild';
+<<<<<<< HEAD
+=======
+import { envPath, getCurrentGoRoot } from './goPath';
+>>>>>>> origin/dev.go2go
 import { outputChannel } from './goStatus';
 import { getBinPath, getCurrentGoPath, getImportPath } from './util';
 import { getEnvPath, getCurrentGoRoot } from './utils/pathUtils';
@@ -26,7 +30,11 @@ export const goGetPackage: CommandFactory = (ctx, goCtx) => () => {
 	const goRuntimePath = getBinPath('go');
 	if (!goRuntimePath) {
 		return vscode.window.showErrorMessage(
+<<<<<<< HEAD
 			`Failed to run "go get" to get package as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${getEnvPath()})`
+=======
+			`Failed to run "go get" to get package as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${envPath})`
+>>>>>>> origin/dev.go2go
 		);
 	}
 

@@ -27,8 +27,15 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+<<<<<<< HEAD
 
 	"github.com/golang/vscode-go/tools/goplssetting"
+=======
+)
+
+var (
+	writeFlag = flag.Bool("w", true, "Write new file contents to disk.")
+>>>>>>> origin/dev.go2go
 )
 
 var (
@@ -122,9 +129,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+<<<<<<< HEAD
 
 	packageJSONFile := filepath.Join(dir, "package.json")
 
+=======
+>>>>>>> origin/dev.go2go
 	// Find the package.json file.
 	data, err := ioutil.ReadFile(packageJSONFile)
 	if err != nil {
@@ -154,6 +164,7 @@ func main() {
 		if len(split) == 1 {
 			log.Fatalf("expected to find %q in %s, not found", gen, filename)
 		}
+<<<<<<< HEAD
 		var s []byte
 		if strings.HasSuffix(filename, ".ts") {
 			s = bytes.Join([][]byte{
@@ -171,6 +182,32 @@ func main() {
 		}
 		newContent := append(s, '\n')
 		checkAndWrite(filename, oldContent, newContent)
+=======
+		s := bytes.Join([][]byte{
+			bytes.TrimSpace(split[0]),
+			gen,
+			toAdd,
+		}, []byte("\n\n"))
+		newContent := append(s, '\n')
+
+		// Return early if the contents are unchanged.
+		if bytes.Equal(oldContent, newContent) {
+			return
+		}
+
+		// Either write out new contents or report an error (if in CI).
+		if *writeFlag {
+			if err := ioutil.WriteFile(filename, newContent, 0644); err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("updated %s\n", filename)
+		} else {
+			base := filepath.Join("docs", filepath.Base(filename))
+			fmt.Printf(`%s have changed in the package.json, but documentation in %s was not updated.
+`, strings.TrimSuffix(base, ".md"), base)
+			os.Exit(1)
+		}
+>>>>>>> origin/dev.go2go
 	}
 
 	b := &bytes.Buffer{}

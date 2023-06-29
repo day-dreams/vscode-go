@@ -13,7 +13,10 @@ import fs = require('fs');
 import os = require('os');
 import path = require('path');
 import { promisify } from 'util';
+<<<<<<< HEAD:src/utils/pathUtils.ts
 import { logVerbose } from '../goLogging';
+=======
+>>>>>>> origin/dev.go2go:src/goPath.ts
 
 let binPathCache: { [bin: string]: string } = {};
 
@@ -44,6 +47,7 @@ export function getBinPathWithPreferredGopathGoroot(
 	preferredGopaths: string[],
 	preferredGoroot?: string,
 	alternateTool?: string,
+<<<<<<< HEAD:src/utils/pathUtils.ts
 	useCache = true
 ): string {
 	const r = getBinPathWithPreferredGopathGorootWithExplanation(
@@ -65,6 +69,10 @@ export function getBinPathWithPreferredGopathGorootWithExplanation(
 	alternateTool?: string,
 	useCache = true
 ): { binPath: string; why?: string } {
+=======
+	useCache = true,
+) {
+>>>>>>> origin/dev.go2go:src/goPath.ts
 	if (alternateTool && path.isAbsolute(alternateTool) && executableFileExists(alternateTool)) {
 		binPathCache[toolName] = alternateTool;
 		return { binPath: alternateTool, why: 'alternateTool' };
@@ -73,6 +81,11 @@ export function getBinPathWithPreferredGopathGorootWithExplanation(
 	// FIXIT: this cache needs to be invalidated when go.goroot or go.alternateTool is changed.
 	if (useCache && binPathCache[toolName]) {
 		return { binPath: binPathCache[toolName], why: 'cached' };
+	}
+
+	// FIXIT: this cache needs to be invalidated when go.goroot or go.alternateTool is changed.
+	if (useCache && binPathCache[toolName]) {
+		return binPathCache[toolName];
 	}
 
 	const binname = alternateTool && !path.isAbsolute(alternateTool) ? alternateTool : toolName;
@@ -136,11 +149,18 @@ export function getCurrentGoRoot(): string {
 }
 
 export function setCurrentGoRoot(goroot: string) {
+<<<<<<< HEAD:src/utils/pathUtils.ts
 	logVerbose(`setCurrentGoRoot(${goroot})`);
 	currentGoRoot = goroot;
 }
 
 export function correctBinname(toolName: string) {
+=======
+	currentGoRoot = goroot;
+}
+
+function correctBinname(toolName: string) {
+>>>>>>> origin/dev.go2go:src/goPath.ts
 	if (process.platform === 'win32') {
 		return toolName + '.exe';
 	}
@@ -168,7 +188,11 @@ export function fileExists(filePath: string): boolean {
 	}
 }
 
+<<<<<<< HEAD:src/utils/pathUtils.ts
 export async function dirExists(p: string): Promise<boolean> {
+=======
+export async function pathExists(p: string): Promise<boolean> {
+>>>>>>> origin/dev.go2go:src/goPath.ts
 	try {
 		const stat = promisify(fs.stat);
 		return (await stat(p)).isDirectory();

@@ -7,6 +7,7 @@ import assert from 'assert';
 import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as vscode from 'vscode';
+<<<<<<< HEAD
 import { LanguageClient } from 'vscode-languageclient/node';
 import { getGoConfig } from '../../src/config';
 import {
@@ -16,6 +17,9 @@ import {
 } from '../../src/language/goLanguageServer';
 import sinon = require('sinon');
 import { getGoVersion, GoVersion } from '../../src/util';
+=======
+import { extensionId } from '../../src/const';
+>>>>>>> origin/dev.go2go
 
 // FakeOutputChannel is a fake output channel used to buffer
 // the output of the tested language client in an in-memory

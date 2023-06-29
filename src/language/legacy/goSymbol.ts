@@ -8,12 +8,19 @@
 
 import cp = require('child_process');
 import vscode = require('vscode');
+<<<<<<< HEAD:src/language/legacy/goSymbol.ts
 import { getGoConfig } from '../../config';
 import { toolExecutionEnvironment } from '../../goEnv';
 import { promptForMissingTool, promptForUpdatingTool } from '../../goInstallTools';
 import { getBinPath, getWorkspaceFolderPath } from '../../util';
 import { getCurrentGoRoot } from '../../utils/pathUtils';
 import { killProcessTree } from '../../utils/processUtils';
+=======
+import { toolExecutionEnvironment } from './goEnv';
+import { promptForMissingTool, promptForUpdatingTool } from './goInstallTools';
+import { getCurrentGoRoot } from './goPath';
+import { getBinPath, getGoConfig, getWorkspaceFolderPath, killTree } from './util';
+>>>>>>> origin/dev.go2go:src/goSymbol.ts
 
 // Keep in sync with github.com/acroca/go-symbols'
 interface GoSymbolDeclaration {

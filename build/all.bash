@@ -50,12 +50,21 @@ run_test() {
   echo "**** Test build ****"
   npm ci
   npm run compile
+<<<<<<< HEAD
 
   echo "**** Run test ****"
   npm run unit-test
   npm test --silent
 
   npm run lint
+=======
+  npm run unit-test
+  npm test --silent
+  npm run lint
+
+  echo "**** Run settings generator ****"
+  go run tools/generate.go -w=false
+>>>>>>> origin/dev.go2go
 }
 
 

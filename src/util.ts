@@ -12,9 +12,13 @@ import semver = require('semver');
 import util = require('util');
 import vscode = require('vscode');
 import { NearestNeighborDict, Node } from './avlTree';
+<<<<<<< HEAD
 import { getGoConfig } from './config';
 import { extensionId } from './const';
 import { GoExtensionContext } from './context';
+=======
+import { extensionId } from './const';
+>>>>>>> origin/dev.go2go
 import { toolExecutionEnvironment } from './goEnv';
 import { getCurrentPackage } from './goModules';
 import { outputChannel } from './goStatus';
@@ -22,12 +26,21 @@ import { getFromWorkspaceState } from './stateUtils';
 import {
 	getEnvPath,
 	fixDriveCasingInWindows,
+<<<<<<< HEAD
 	getBinPathWithPreferredGopathGorootWithExplanation,
 	getCurrentGoRoot,
 	getInferredGopath,
 	resolveHomeDir
 } from './utils/pathUtils';
 import { killProcessTree } from './utils/processUtils';
+=======
+	getBinPathWithPreferredGopathGoroot,
+	getCurrentGoRoot,
+	getInferredGopath,
+	resolveHomeDir,
+} from './goPath';
+import { outputChannel } from './goStatus';
+>>>>>>> origin/dev.go2go
 
 let userNameHash = 0;
 
@@ -157,6 +170,7 @@ let cachedGoBinPath: string | undefined;
 let cachedGoVersion: GoVersion | undefined;
 let toolsGopath: string;
 
+<<<<<<< HEAD
 // getCheckForToolsUpdatesConfig returns go.toolsManagement.checkForUpdates configuration.
 export function getCheckForToolsUpdatesConfig(gocfg: vscode.WorkspaceConfiguration) {
 	// useGoProxyToCheckForToolUpdates deprecation
@@ -172,6 +186,19 @@ export function getCheckForToolsUpdatesConfig(gocfg: vscode.WorkspaceConfigurati
 	}
 	return gocfg.get('toolsManagement.checkForUpdates') as string;
 }
+=======
+// getGoConfig is declared as an exported const rather than a function, so it can be stubbbed in testing.
+export const getGoConfig = (uri?: vscode.Uri) => {
+	if (!uri) {
+		if (vscode.window.activeTextEditor) {
+			uri = vscode.window.activeTextEditor.document.uri;
+		} else {
+			uri = null;
+		}
+	}
+	return vscode.workspace.getConfiguration('go', uri);
+};
+>>>>>>> origin/dev.go2go
 
 export function byteOffsetAt(document: vscode.TextDocument, position: vscode.Position): number {
 	const offset = document.offsetAt(position);
@@ -337,7 +364,12 @@ export async function getGoVersion(goBinPath?: string): Promise<GoVersion> {
 	};
 
 	if (!goRuntimePath) {
+<<<<<<< HEAD
 		throw error(`unable to locate "go" binary in GOROOT (${getCurrentGoRoot()}) or PATH (${getEnvPath()})`);
+=======
+		warn(`unable to locate "go" binary in GOROOT (${getCurrentGoRoot()}) or PATH (${envPath})`);
+		return;
+>>>>>>> origin/dev.go2go
 	}
 	if (cachedGoBinPath === goRuntimePath && cachedGoVersion) {
 		if (cachedGoVersion.isValid()) {
@@ -357,7 +389,12 @@ export async function getGoVersion(goBinPath?: string): Promise<GoVersion> {
 		if (stderr) {
 			error(`failed to run "${goRuntimePath} version": stdout: ${stdout}, stderr: ${stderr}`);
 		}
+<<<<<<< HEAD
 		goVersion = new GoVersion(goRuntimePath, stdout);
+=======
+		cachedGoBinPath = goRuntimePath;
+		cachedGoVersion = new GoVersion(goRuntimePath, stdout);
+>>>>>>> origin/dev.go2go
 	} catch (err) {
 		throw error(`failed to run "${goRuntimePath} version": ${err} cwd: ${cwd}`);
 	}
@@ -464,6 +501,7 @@ function resolveToolsGopath(): string {
 	return toolsGopathForWorkspace;
 }
 
+<<<<<<< HEAD
 // getBinPath returns the path to the tool.
 export function getBinPath(tool: string, useCache = true): string {
 	const r = getBinPathWithExplanation(tool, useCache);
@@ -494,6 +532,18 @@ export function getBinPathWithExplanation(
 		tool === 'go' ? [] : [getToolsGopath(), getCurrentGoPath()],
 		tool === 'go' ? gorootInSetting : undefined,
 		selectedGoPath ?? (alternateToolPath && resolvePath(alternateToolPath)),
+=======
+export function getBinPath(tool: string, useCache = true): string {
+	const cfg = getGoConfig();
+	const alternateTools: { [key: string]: string } = cfg.get('alternateTools');
+	const alternateToolPath: string = alternateTools[tool];
+
+	return getBinPathWithPreferredGopathGoroot(
+		tool,
+		tool === 'go' ? [] : [getToolsGopath(), getCurrentGoPath()],
+		tool === 'go' && cfg.get('goroot') ? cfg.get('goroot') : undefined,
+		resolvePath(alternateToolPath),
+>>>>>>> origin/dev.go2go
 		useCache
 	);
 }
@@ -550,7 +600,11 @@ export function getCurrentGoPath(workspaceUri?: vscode.Uri): string {
 	return currentGopath;
 }
 
+<<<<<<< HEAD
 export function getModuleCache(): string | undefined {
+=======
+export function getModuleCache(): string {
+>>>>>>> origin/dev.go2go
 	if (process.env['GOMODCACHE']) {
 		return process.env['GOMODCACHE'];
 	}

@@ -1,5 +1,6 @@
 name: Long Tests
 
+<<<<<<< HEAD
 on: [push]
 
 jobs:
@@ -10,10 +11,27 @@ jobs:
     # Not containing 'SKIP CI' in the commit message AND
     # (Either the official repository, or the commit message contains 'FORCE RUN CI')
     if: (github.repository == 'golang/vscode-go' || contains(github.event.head_commit.message, 'FORCE RUN CI')) && !contains(github.event.head_commit.message, 'SKIP CI')
+=======
+on:
+  push:
+    branches-ignore:
+      - 'latest'
+      - 'upstream'
+
+jobs:
+  build:
+    name: ${{ matrix.os }} ${{ matrix.version }}
+    runs-on: ${{ matrix.os }}
+
+    # Not containing 'SKIP CI' in the commit message AND
+    # (Either non-Windows OR triggered on 'push' (if triggered by 'pull_request', github.base_ref is not empty)
+    if: github.repository == 'golang/vscode-go' && !contains(github.event.head_commit.message, 'SKIP CI')
+>>>>>>> origin/dev.go2go
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
+<<<<<<< HEAD
         os: [ubuntu-latest, windows-latest] # TODO: reenable macos-latest
         version: ['stable']
         go: ['1.17', '1.18', '1.19', '1.20']
@@ -34,6 +52,24 @@ jobs:
          go-version: ${{ matrix.go }}
          check-latest: true
          cache: true
+=======
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        version: ['stable']
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+         go-version: '1.14'
+>>>>>>> origin/dev.go2go
 
       - name: Install dependencies
         run: npm ci
@@ -44,6 +80,7 @@ jobs:
       - name: Install Go tools (Modules mode)
         run: |
             go version
+<<<<<<< HEAD
             go run ./tools/installtools/main.go
         env:
           GO111MODULE: on
@@ -60,9 +97,45 @@ jobs:
       - name: Run tests (Windows/Mac)
         run: npm run test
         if: ${{ matrix.os != 'ubuntu-latest' }}
+=======
+            go get github.com/acroca/go-symbols
+            go get github.com/davidrjenni/reftools/cmd/fillstruct
+            go get github.com/haya14busa/goplay/cmd/goplay
+            go get github.com/mdempsky/gocode
+            go get github.com/sqs/goreturns
+            go get github.com/uudashr/gopkgs/v2/cmd/gopkgs
+            go get github.com/zmb3/gogetdoc
+            go get golang.org/x/lint/golint
+            go get golang.org/x/tools/cmd/gorename
+            go get golang.org/x/tools/gopls
+        env:
+          GO111MODULE: on   
+          
+      - name: Install Go tools (GOPATH mode)
+        run: |
+          go version
+          go get github.com/cweill/gotests/...
+          go get github.com/rogpeppe/godef
+          go get github.com/ramya-rao-a/go-outline
+            # Because some tests depend on the source code checked in GOPATH. TODO: FIX THEM.
+        env:
+          GO111MODULE: off
+      
+      - name: Run unit tests
+        run: npm run unit-test
+        
+      - name: Run tests
+        uses: GabrielBB/xvfb-action@v1.0
+        with:
+          run: npm run test
+>>>>>>> origin/dev.go2go
         env:
           CODE_VERSION: ${{ matrix.version }}
       
       - name: Lint check
         run: npm run lint
+<<<<<<< HEAD
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.version == 'stable' }}
+=======
+        if: ${{ matrix.os }} == 'ubuntu-latest'
+>>>>>>> origin/dev.go2go

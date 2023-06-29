@@ -17,8 +17,12 @@ import { toolExecutionEnvironment } from './goEnv';
 import { getCurrentPackage } from './goModules';
 import { GoDocumentSymbolProvider } from './goDocumentSymbols';
 import { getNonVendorPackages } from './goPackages';
+<<<<<<< HEAD
 import { getBinPath, getCurrentGoPath, getTempFilePath, LineBuffer, resolvePath } from './util';
 import { parseEnvFile } from './utils/envUtils';
+=======
+import { envPath, getCurrentGoRoot, getCurrentGoWorkspaceFromGOPATH, parseEnvFile } from './goPath';
+>>>>>>> origin/dev.go2go
 import {
 	getEnvPath,
 	expandFilePathInOutput,
@@ -278,6 +282,7 @@ export async function goTest(testconfig: TestConfig): Promise<boolean> {
 		outputChannel = testconfig.outputChannel;
 	}
 
+<<<<<<< HEAD
 	const goRuntimePath = getBinPath('go');
 	if (!goRuntimePath) {
 		vscode.window.showErrorMessage(
@@ -378,6 +383,174 @@ export async function goTest(testconfig: TestConfig): Promise<boolean> {
 	}
 	if (tmpCoverPath) {
 		await applyCodeCoverageToAllEditors(tmpCoverPath, testconfig.dir);
+=======
+		if (!testconfig.background) {
+			outputChannel.show(true);
+		}
+
+		const testTags: string = getTestTags(testconfig.goConfig);
+		const args: Array<string> = ['test'];
+		const testType: string = testconfig.isBenchmark ? 'Benchmarks' : 'Tests';
+
+		if (testconfig.isBenchmark) {
+			args.push('-benchmem', '-run=^$');
+		} else {
+			args.push('-timeout', testconfig.goConfig['testTimeout']);
+			if (testconfig.applyCodeCoverage) {
+				args.push('-coverprofile=' + tmpCoverPath);
+			}
+		}
+		if (testTags && testconfig.flags.indexOf('-tags') === -1) {
+			args.push('-tags', testTags);
+		}
+
+		const testEnvVars = getTestEnvVars(testconfig.goConfig);
+		const goRuntimePath = getBinPath('go');
+
+		if (!goRuntimePath) {
+			vscode.window.showErrorMessage(
+				`Failed to run "go test" as the "go" binary cannot be found in either GOROOT(${getCurrentGoRoot()}) or PATH(${envPath})`
+			);
+			return Promise.resolve();
+		}
+
+		const currentGoWorkspace = testconfig.isMod
+			? ''
+			: getCurrentGoWorkspaceFromGOPATH(getCurrentGoPath(), testconfig.dir);
+		let targets = targetArgs(testconfig);
+		let getCurrentPackagePromise = Promise.resolve('');
+		if (testconfig.isMod) {
+			getCurrentPackagePromise = getCurrentPackage(testconfig.dir);
+		} else if (currentGoWorkspace) {
+			getCurrentPackagePromise = Promise.resolve(testconfig.dir.substr(currentGoWorkspace.length + 1));
+		}
+		let pkgMapPromise: Promise<Map<string, string> | null> = Promise.resolve(null);
+		if (testconfig.includeSubDirectories) {
+			if (testconfig.isMod) {
+				targets = ['./...'];
+				// We need the mapping to get absolute paths for the files in the test output
+				pkgMapPromise = getNonVendorPackages(testconfig.dir);
+			} else {
+				pkgMapPromise = getGoVersion().then((goVersion) => {
+					if (goVersion.gt('1.8')) {
+						targets = ['./...'];
+						return null; // We dont need mapping, as we can derive the absolute paths from package path
+					}
+					return getNonVendorPackages(testconfig.dir).then((pkgMap) => {
+						targets = Array.from(pkgMap.keys());
+						return pkgMap; // We need the individual package paths to pass to `go test`
+					});
+				});
+			}
+		}
+
+		Promise.all([pkgMapPromise, getCurrentPackagePromise]).then(
+			([pkgMap, currentPackage]) => {
+				if (!pkgMap) {
+					pkgMap = new Map<string, string>();
+				}
+				// Use the package name to be in the args to enable running tests in symlinked directories
+				if (!testconfig.includeSubDirectories && currentPackage) {
+					targets.splice(0, 0, currentPackage);
+				}
+
+				const outTargets = args.slice(0);
+				if (targets.length > 4) {
+					outTargets.push('<long arguments omitted>');
+				} else {
+					outTargets.push(...targets);
+				}
+
+				args.push(...targets);
+
+				// ensure that user provided flags are appended last (allow use of -args ...)
+				// ignore user provided -run flag if we are already using it
+				if (args.indexOf('-run') > -1) {
+					removeRunFlag(testconfig.flags);
+				}
+				args.push(...testconfig.flags);
+
+				outTargets.push(...testconfig.flags);
+				outputChannel.appendLine(['Running tool:', goRuntimePath, ...outTargets].join(' '));
+				outputChannel.appendLine('');
+
+				const tp = cp.spawn(goRuntimePath, args, { env: testEnvVars, cwd: testconfig.dir });
+				const outBuf = new LineBuffer();
+				const errBuf = new LineBuffer();
+
+				// 1=ok/FAIL, 2=package, 3=time/(cached)
+				const packageResultLineRE = /^(ok|FAIL)[ \t]+(.+?)[ \t]+([0-9\.]+s|\(cached\))/;
+				const lineWithErrorRE = /^(\t|\s\s\s\s)\S/;
+				const testResultLines: string[] = [];
+
+				const processTestResultLine = (line: string) => {
+					testResultLines.push(line);
+					const result = line.match(packageResultLineRE);
+					if (result && (pkgMap.has(result[2]) || currentGoWorkspace)) {
+						const hasTestFailed = line.startsWith('FAIL');
+						const packageNameArr = result[2].split('/');
+						const baseDir = pkgMap.get(result[2]) || path.join(currentGoWorkspace, ...packageNameArr);
+						testResultLines.forEach((testResultLine) => {
+							if (hasTestFailed && lineWithErrorRE.test(testResultLine)) {
+								outputChannel.appendLine(expandFilePathInOutput(testResultLine, baseDir));
+							} else {
+								outputChannel.appendLine(testResultLine);
+							}
+						});
+						testResultLines.splice(0);
+					}
+				};
+
+				// go test emits test results on stdout, which contain file names relative to the package under test
+				outBuf.onLine((line) => processTestResultLine(line));
+				outBuf.onDone((last) => {
+					if (last) {
+						processTestResultLine(last);
+					}
+
+					// If there are any remaining test result lines, emit them to the output channel.
+					if (testResultLines.length > 0) {
+						testResultLines.forEach((line) => outputChannel.appendLine(line));
+					}
+				});
+
+				// go test emits build errors on stderr, which contain paths relative to the cwd
+				errBuf.onLine((line) => outputChannel.appendLine(expandFilePathInOutput(line, testconfig.dir)));
+				errBuf.onDone((last) => last && outputChannel.appendLine(expandFilePathInOutput(last, testconfig.dir)));
+
+				tp.stdout.on('data', (chunk) => outBuf.append(chunk.toString()));
+				tp.stderr.on('data', (chunk) => errBuf.append(chunk.toString()));
+
+				statusBarItem.show();
+
+				tp.on('close', (code, signal) => {
+					outBuf.done();
+					errBuf.done();
+
+					const index = runningTestProcesses.indexOf(tp, 0);
+					if (index > -1) {
+						runningTestProcesses.splice(index, 1);
+					}
+
+					if (!runningTestProcesses.length) {
+						statusBarItem.hide();
+					}
+
+					resolve(code === 0);
+				});
+
+				runningTestProcesses.push(tp);
+			},
+			(err) => {
+				outputChannel.appendLine(`Error: ${testType} failed.`);
+				outputChannel.appendLine(err);
+				resolve(false);
+			}
+		);
+	});
+	if (testconfig.applyCodeCoverage) {
+		await applyCodeCoverageToAllEditors(tmpCoverPath);
+>>>>>>> origin/dev.go2go
 	}
 	return testResult;
 }

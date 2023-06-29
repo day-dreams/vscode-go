@@ -216,6 +216,7 @@ export function getConfiguredTools(
 	return tools;
 }
 
+<<<<<<< HEAD
 export function goplsStaticcheckEnabled(
 	goConfig: { [key: string]: any },
 	goplsConfig: { [key: string]: any }
@@ -226,6 +227,182 @@ export function goplsStaticcheckEnabled(
 		(goplsConfig['ui.diagnostic.staticcheck'] === undefined && goplsConfig['staticcheck'] !== true)
 	) {
 		return false;
+=======
+export const allToolsInformation: { [key: string]: Tool } = {
+	'gocode': {
+		name: 'gocode',
+		importPath: 'github.com/mdempsky/gocode',
+		isImportant: true,
+		description: 'Auto-completion, does not work with modules',
+		close: async (): Promise<string> => {
+			const toolBinPath = getBinPath('gocode');
+			if (!path.isAbsolute(toolBinPath)) {
+				return '';
+			}
+			try {
+				const execFile = util.promisify(cp.execFile);
+				const { stderr } = await execFile(toolBinPath, ['close']);
+				if (stderr.indexOf(`rpc: can't find service Server.`) > -1) {
+					return `Installing gocode aborted as existing process cannot be closed. Please kill the running process for gocode and try again.`;
+				}
+			} catch (err) {
+				return `Failed to close gocode process: ${err}.`;
+			}
+			return '';
+		},
+	},
+	'gocode-gomod': {
+		name: 'gocode-gomod',
+		importPath: 'github.com/stamblerre/gocode',
+		isImportant: true,
+		description: 'Auto-completion, works with modules',
+		minimumGoVersion: semver.coerce('1.11'),
+	},
+	'gopkgs': {
+		name: 'gopkgs',
+		importPath: 'github.com/uudashr/gopkgs/v2/cmd/gopkgs',
+		isImportant: true,
+		description: 'Auto-completion of unimported packages & Add Import feature'
+	},
+	'go-outline': {
+		name: 'go-outline',
+		importPath: 'github.com/ramya-rao-a/go-outline',
+		isImportant: true,
+		description: 'Go to symbol in file'
+	},
+	'go-symbols': {
+		name: 'go-symbols',
+		importPath: 'github.com/acroca/go-symbols',
+		isImportant: false,
+		description: 'Go to symbol in workspace'
+	},
+	'guru': {
+		name: 'guru',
+		importPath: 'golang.org/x/tools/cmd/guru',
+		isImportant: false,
+		description: 'Find all references and Go to implementation of symbols'
+	},
+	'gorename': {
+		name: 'gorename',
+		importPath: 'golang.org/x/tools/cmd/gorename',
+		isImportant: false,
+		description: 'Rename symbols'
+	},
+	'gomodifytags': {
+		name: 'gomodifytags',
+		importPath: 'github.com/fatih/gomodifytags',
+		isImportant: false,
+		description: 'Modify tags on structs'
+	},
+	'goplay': {
+		name: 'goplay',
+		importPath: 'github.com/haya14busa/goplay/cmd/goplay',
+		isImportant: false,
+		description: 'The Go playground'
+	},
+	'impl': {
+		name: 'impl',
+		importPath: 'github.com/josharian/impl',
+		isImportant: false,
+		description: 'Stubs for interfaces'
+	},
+	'gotype-live': {
+		name: 'gotype-live',
+		importPath: 'github.com/tylerb/gotype-live',
+		isImportant: false,
+		description: 'Show errors as you type'
+	},
+	'godef': {
+		name: 'godef',
+		importPath: 'github.com/rogpeppe/godef',
+		isImportant: true,
+		description: 'Go to definition'
+	},
+	'gogetdoc': {
+		name: 'gogetdoc',
+		importPath: 'github.com/zmb3/gogetdoc',
+		isImportant: true,
+		description: 'Go to definition & text shown on hover'
+	},
+	'goimports': {
+		name: 'goimports',
+		importPath: 'golang.org/x/tools/cmd/goimports',
+		isImportant: true,
+		description: 'Formatter'
+	},
+	'goreturns': {
+		name: 'goreturns',
+		importPath: 'github.com/sqs/goreturns',
+		isImportant: true,
+		description: 'Formatter'
+	},
+	'goformat': {
+		name: 'goformat',
+		importPath: 'winterdrache.de/goformat/goformat',
+		isImportant: false,
+		description: 'Formatter'
+	},
+	'golint': {
+		name: 'golint',
+		importPath: 'golang.org/x/lint/golint',
+		isImportant: true,
+		description: 'Linter',
+		minimumGoVersion: semver.coerce('1.9'),
+	},
+	'gotests': {
+		name: 'gotests',
+		importPath: 'github.com/cweill/gotests/...',
+		isImportant: false,
+		description: 'Generate unit tests',
+		minimumGoVersion: semver.coerce('1.9'),
+	},
+	'staticcheck': {
+		name: 'staticcheck',
+		importPath: 'honnef.co/go/tools/...',
+		isImportant: true,
+		description: 'Linter'
+	},
+	'golangci-lint': {
+		name: 'golangci-lint',
+		importPath: 'github.com/golangci/golangci-lint/cmd/golangci-lint',
+		isImportant: true,
+		description: 'Linter'
+	},
+	'revive': {
+		name: 'revive',
+		importPath: 'github.com/mgechev/revive',
+		isImportant: true,
+		description: 'Linter'
+	},
+	'gopls': {
+		name: 'gopls',
+		importPath: 'golang.org/x/tools/gopls',
+		isImportant: false,
+		description: 'Language Server from Google',
+		minimumGoVersion: semver.coerce('1.12'),
+		latestVersion: semver.coerce('0.4.1'),
+		latestVersionTimestamp: moment('2020-05-13', 'YYYY-MM-DD'),
+		latestPrereleaseVersion: semver.coerce('0.4.1'),
+		latestPrereleaseVersionTimestamp: moment('2020-05-13', 'YYYY-MM-DD'),
+	},
+	'dlv': {
+		name: 'dlv',
+		importPath: 'github.com/go-delve/delve/cmd/dlv',
+		isImportant: false,
+		description: 'Debugging'
+	},
+	'fillstruct': {
+		name: 'fillstruct',
+		importPath: 'github.com/davidrjenni/reftools/cmd/fillstruct',
+		isImportant: false,
+		description: 'Fill structs with defaults'
+	},
+	'godoctor': {
+		name: 'godoctor',
+		importPath: 'github.com/godoctor/godoctor',
+		isImportant: false,
+		description: 'Extract to functions and variables'
+>>>>>>> origin/dev.go2go
 	}
 	return true;
 }
