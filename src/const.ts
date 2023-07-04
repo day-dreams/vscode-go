@@ -9,4 +9,8 @@
 // For example, we replace this file with the version in the build/nightly.
 // Make sure to reflect any changes in this file to build/nightly/const.ts.
 
+<<<<<<< HEAD
 export const extensionId = 'golang.go';
+=======
+export const extensionId: string = 'golang.go2go';
+>>>>>>> origin/dev.go2go

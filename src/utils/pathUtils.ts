@@ -13,14 +13,22 @@ import fs = require('fs');
 import os = require('os');
 import path = require('path');
 import { promisify } from 'util';
+<<<<<<< HEAD:src/utils/pathUtils.ts
 import { logVerbose } from '../goLogging';
+=======
+>>>>>>> origin/dev.go2go:src/goPath.ts
 
 let binPathCache: { [bin: string]: string } = {};
 
-export const envPath = process.env['PATH'] || (process.platform === 'win32' ? process.env['Path'] : null);
+export const getEnvPath = () => process.env['PATH'] || (process.platform === 'win32' ? process.env['Path'] : null);
+export const initialEnvPath = getEnvPath();
 
 // find the tool's path from the given PATH env var, or null if the tool is not found.
-export function getBinPathFromEnvVar(toolName: string, envVarValue: string, appendBinToPath: boolean): string | null {
+export function getBinPathFromEnvVar(
+	toolName: string,
+	envVarValue: string | null | undefined,
+	appendBinToPath: boolean
+): string | null {
 	toolName = correctBinname(toolName);
 	if (envVarValue) {
 		const paths = envVarValue.split(path.delimiter);
@@ -39,6 +47,7 @@ export function getBinPathWithPreferredGopathGoroot(
 	preferredGopaths: string[],
 	preferredGoroot?: string,
 	alternateTool?: string,
+<<<<<<< HEAD:src/utils/pathUtils.ts
 	useCache = true
 ): string {
 	const r = getBinPathWithPreferredGopathGorootWithExplanation(
@@ -60,6 +69,10 @@ export function getBinPathWithPreferredGopathGorootWithExplanation(
 	alternateTool?: string,
 	useCache = true
 ): { binPath: string; why?: string } {
+=======
+	useCache = true,
+) {
+>>>>>>> origin/dev.go2go:src/goPath.ts
 	if (alternateTool && path.isAbsolute(alternateTool) && executableFileExists(alternateTool)) {
 		binPathCache[toolName] = alternateTool;
 		return { binPath: alternateTool, why: 'alternateTool' };
@@ -68,6 +81,11 @@ export function getBinPathWithPreferredGopathGorootWithExplanation(
 	// FIXIT: this cache needs to be invalidated when go.goroot or go.alternateTool is changed.
 	if (useCache && binPathCache[toolName]) {
 		return { binPath: binPathCache[toolName], why: 'cached' };
+	}
+
+	// FIXIT: this cache needs to be invalidated when go.goroot or go.alternateTool is changed.
+	if (useCache && binPathCache[toolName]) {
+		return binPathCache[toolName];
 	}
 
 	const binname = alternateTool && !path.isAbsolute(alternateTool) ? alternateTool : toolName;
@@ -97,7 +115,7 @@ export function getBinPathWithPreferredGopathGorootWithExplanation(
 	}
 
 	// Finally search PATH parts
-	const pathFromPath = getBinPathFromEnvVar(binname, envPath, false);
+	const pathFromPath = getBinPathFromEnvVar(binname, getEnvPath(), false);
 	if (pathFromPath) {
 		binPathCache[toolName] = pathFromPath;
 		return { binPath: pathFromPath, why: found('path') };
@@ -131,11 +149,18 @@ export function getCurrentGoRoot(): string {
 }
 
 export function setCurrentGoRoot(goroot: string) {
+<<<<<<< HEAD:src/utils/pathUtils.ts
 	logVerbose(`setCurrentGoRoot(${goroot})`);
 	currentGoRoot = goroot;
 }
 
 export function correctBinname(toolName: string) {
+=======
+	currentGoRoot = goroot;
+}
+
+function correctBinname(toolName: string) {
+>>>>>>> origin/dev.go2go:src/goPath.ts
 	if (process.platform === 'win32') {
 		return toolName + '.exe';
 	}
@@ -163,7 +188,11 @@ export function fileExists(filePath: string): boolean {
 	}
 }
 
+<<<<<<< HEAD:src/utils/pathUtils.ts
 export async function dirExists(p: string): Promise<boolean> {
+=======
+export async function pathExists(p: string): Promise<boolean> {
+>>>>>>> origin/dev.go2go:src/goPath.ts
 	try {
 		const stat = promisify(fs.stat);
 		return (await stat(p)).isDirectory();
@@ -187,7 +216,7 @@ export function resolveHomeDir(inputPath: string): string {
 }
 
 // Walks up given folder path to return the closest ancestor that has `src` as a child
-export function getInferredGopath(folderPath: string): string {
+export function getInferredGopath(folderPath: string): string | undefined {
 	if (!folderPath) {
 		return;
 	}
@@ -206,9 +235,9 @@ export function getInferredGopath(folderPath: string): string {
  * @param gopath string Current Gopath. Can be ; or : separated (as per os) to support multiple paths
  * @param currentFileDirPath string
  */
-export function getCurrentGoWorkspaceFromGOPATH(gopath: string, currentFileDirPath: string): string {
+export function getCurrentGoWorkspaceFromGOPATH(gopath: string | undefined, currentFileDirPath: string): string {
 	if (!gopath) {
-		return;
+		return '';
 	}
 	const workspaces: string[] = gopath.split(path.delimiter);
 	let currentWorkspace = '';

@@ -11,4 +11,7 @@
 	},
 	"editor.insertSpaces": false,
 	"typescript.tsdk": "node_modules\\typescript\\lib",
+	"githubPullRequests.ignoredPullRequestBranches": [
+		"master"
+	],
 }

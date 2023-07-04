@@ -6,10 +6,12 @@
 // the gopls's API and generate documentation from it.
 //
 // To update documentation based on the current package.json:
-//    go run tools/generate.go
+//
+//	go run tools/generate.go
 //
 // To update package.json and generate documentation.
-//    go run tools/generate.go -gopls
+//
+//	go run tools/generate.go -gopls
 package main
 
 import (
@@ -25,8 +27,15 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+<<<<<<< HEAD
 
 	"github.com/golang/vscode-go/tools/goplssetting"
+=======
+)
+
+var (
+	writeFlag = flag.Bool("w", true, "Write new file contents to disk.")
+>>>>>>> origin/dev.go2go
 )
 
 var (
@@ -120,9 +129,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+<<<<<<< HEAD
 
 	packageJSONFile := filepath.Join(dir, "package.json")
 
+=======
+>>>>>>> origin/dev.go2go
 	// Find the package.json file.
 	data, err := ioutil.ReadFile(packageJSONFile)
 	if err != nil {
@@ -152,6 +164,7 @@ func main() {
 		if len(split) == 1 {
 			log.Fatalf("expected to find %q in %s, not found", gen, filename)
 		}
+<<<<<<< HEAD
 		var s []byte
 		if strings.HasSuffix(filename, ".ts") {
 			s = bytes.Join([][]byte{
@@ -169,6 +182,32 @@ func main() {
 		}
 		newContent := append(s, '\n')
 		checkAndWrite(filename, oldContent, newContent)
+=======
+		s := bytes.Join([][]byte{
+			bytes.TrimSpace(split[0]),
+			gen,
+			toAdd,
+		}, []byte("\n\n"))
+		newContent := append(s, '\n')
+
+		// Return early if the contents are unchanged.
+		if bytes.Equal(oldContent, newContent) {
+			return
+		}
+
+		// Either write out new contents or report an error (if in CI).
+		if *writeFlag {
+			if err := ioutil.WriteFile(filename, newContent, 0644); err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("updated %s\n", filename)
+		} else {
+			base := filepath.Join("docs", filepath.Base(filename))
+			fmt.Printf(`%s have changed in the package.json, but documentation in %s was not updated.
+`, strings.TrimSuffix(base, ".md"), base)
+			os.Exit(1)
+		}
+>>>>>>> origin/dev.go2go
 	}
 
 	b := &bytes.Buffer{}
@@ -239,7 +278,8 @@ func main() {
 	latestPre := versions.Versions[latestIndex]
 	// We need to find the last version that was not a pre-release.
 	var latest string
-	for latest = versions.Versions[latestIndex]; latestIndex >= 0; latestIndex-- {
+	for ; latestIndex >= 0; latestIndex-- {
+		latest = versions.Versions[latestIndex]
 		if !strings.Contains(latest, "pre") {
 			break
 		}
@@ -340,8 +380,10 @@ func defaultDescriptionSnippet(p *Property) string {
 	switch p.Type {
 	case "object":
 		x, ok := p.Default.(map[string]interface{})
-		// do nothing if it is nil
-		if ok && len(x) > 0 {
+		if !ok {
+			panic(fmt.Sprintf("unexpected type of object: %v", *p))
+		} else if len(x) > 0 {
+			// do nothing if it is nil
 			writeMapObject(b, "", x)
 		}
 	case "string":
@@ -349,8 +391,18 @@ func defaultDescriptionSnippet(p *Property) string {
 	case "boolean", "number":
 		fmt.Fprintf(b, "%v", p.Default)
 	case "array":
-		if x, ok := p.Default.([]interface{}); ok && len(x) > 0 {
-			fmt.Fprintf(b, "%v", p.Default)
+		x, ok := p.Default.([]interface{})
+		if !ok {
+			panic(fmt.Sprintf("unexpected type for array: %v", *p))
+		} else if len(x) > 0 {
+			fmt.Fprintf(b, "[")
+			for i, v := range x {
+				if i > 0 {
+					fmt.Fprintf(b, ", ")
+				}
+				fmt.Fprintf(b, "%q", v)
+			}
+			fmt.Fprintf(b, "]")
 		}
 	default:
 		fmt.Fprintf(b, "%v", p.Default)

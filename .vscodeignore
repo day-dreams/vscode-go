@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 **/*.map
 **/tslint.json
+.DS_Store
+.editorconfig
+.eslintignore
+.eslintrc.json
 .git/
 .github/
 .gitignore
@@ -9,7 +14,10 @@
 .vscode-test/
 SECURITY.md
 build/
+codereview.cfg
 docs/
+go.mod
+go.sum
 node_modules/
 out/
 src/
@@ -18,3 +26,24 @@ third_party/
 tools/
 tsconfig.json
 typings/
+=======
+test/
+third_party/
+typings/
+.vscode/
+tsconfig.json
+.gitignore
+**/*.map
+**/tslint.json
+build/
+docs/
+*.md.nightly
+.github/**/*
+.prettierrc.json
+.vscode-test/**
+SECURITY.md
+node_modules
+out/
+src/
+webpack.config.js
+>>>>>>> origin/dev.go2go

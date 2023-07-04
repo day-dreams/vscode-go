@@ -1,6 +1,7 @@
 {
 	"version": "0.2.0",
 	"configurations": [
+<<<<<<< HEAD
 		{
 			"name": "Launch tools/generate",
 			"type": "go",
@@ -9,6 +10,8 @@
 			"program": "${workspaceFolder}/tools/generate.go",
 			"cwd": "${workspaceFolder}"
 		},
+=======
+>>>>>>> origin/dev.go2go
 		{
 			"name": "Launch Extension",
 			"type": "extensionHost",
@@ -22,7 +25,6 @@
 			"outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ],
-			"stopOnEntry": false,
 			"sourceMaps": true,
 			"smartStep": true,
 			"preLaunchTask": "npm: bundle-dev",
@@ -33,7 +35,6 @@
 		{
 			"name": "Launch as server",
 			"type": "node",
-			"protocol": "inspector",
 			"request": "launch",
 			"program": "${workspaceFolder}/dist/debugAdapter.js",
 			"args": [
@@ -47,6 +48,21 @@
 			"preLaunchTask": "npm: bundle-dev"
 		},
 		{
+			"name": "Launch as server (dlv dap)",
+			"type": "node",
+			"protocol": "inspector",
+			"request": "launch",
+			"program": "${workspaceFolder}/out/src/debugAdapter2/goDlvDebugMain.js",
+			"args": [
+				"--server=4711"
+			],
+			"sourceMaps": true,
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.js"
+			],
+			"preLaunchTask": "npm"
+		},
+		{
 			"name": "Launch Extension Tests",
 			"type": "extensionHost",
 			"request": "launch",
@@ -54,6 +70,7 @@
 			// the workspace path should be GOPATH
 			"args": [
 				"--disable-extensions",
+				"--profile-temp",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/out/test/integration/index",
 				"--user-data-dir=${workspaceFolder}/.user-data-dir-test",
@@ -64,14 +81,9 @@
 				"VSCODE_GO_IN_TEST": "1",  // Disable code that shouldn't be used in test
 				"MOCHA_TIMEOUT": "999999",
 			},
-			"stopOnEntry": false,
 			"sourceMaps": true,
 			"smartStep": true,
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js",
-				"${workspaceFolder}/out/test/**/*.js"
-			],
-			"preLaunchTask": "npm: watch"
+			"preLaunchTask": "npm: watch",
 		},
 		{
 			"name": "Launch Extension Tests with Gopls",
@@ -81,6 +93,7 @@
 			// the workspace path should be GOPATH
 			"args": [
 				"--disable-extensions",
+				"--profile-temp",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/out/test/gopls/index",
 				"--user-data-dir=${workspaceFolder}/.user-data-dir-test",
@@ -89,12 +102,7 @@
 			"env": {
 				"VSCODE_GO_IN_TEST": "1"  // Disable code that shouldn't be used in test
 			},
-			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outFiles": [
-				"${workspaceFolder}/out/**/*.js",
-				"${workspaceFolder}/out/test/**/*.js"
-			],
 			"preLaunchTask": "npm: watch",
 		},
 		{

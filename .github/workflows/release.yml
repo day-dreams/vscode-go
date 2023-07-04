@@ -37,9 +37,21 @@ jobs:
     if: github.repository == 'golang/vscode-go'
 
     steps:
+<<<<<<< HEAD
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+=======
       - name: checkout code
         uses: actions/checkout@v2
 
+>>>>>>> origin/dev.go2go
       - name: get release version
         id: release_version
         run: |
@@ -50,6 +62,7 @@ jobs:
             exit 1
           fi
 
+<<<<<<< HEAD
           echo "EXT_VERSION=${TAGGED_VERSION}" >> $GITHUB_ENV
           WRITTEN_VERSION="$(cat package.json | jq '.version' -r)"
 
@@ -59,12 +72,23 @@ jobs:
               exit 1
             fi
             echo "EXT_ISPREVIEW=1" >> $GITHUB_ENV
+=======
+          echo ::set-env name=EXT_VERSION::"${TAGGED_VERSION}"
+          WRITTEN_VERSION="$(cat package.json | jq '.version' -r)"
+
+          if [[ ${TAGGED_VERSION} == *"-"* ]]; then
+            echo ::set-env name=EXT_ISPREVIEW::1
+>>>>>>> origin/dev.go2go
           else
             if [[ "${TAGGED_VERSION}" != "${WRITTEN_VERSION}" ]]; then
               echo "Release Tag and Version in package.json do not match: '${TAGGED_VERSION}' vs '${WRITTEN_VERSION}'"
               exit 1
             fi
+<<<<<<< HEAD
             echo "EXT_ISPREVIEW=0" >> $GITHUB_ENV
+=======
+            echo ::set-env name=EXT_ISPREVIEW::0
+>>>>>>> origin/dev.go2go
           fi
 
       - name: stamp version
@@ -74,8 +98,39 @@ jobs:
           npm ci
           npm run vscode:prepublish
 
+<<<<<<< HEAD
+      - name: package extension
+        run: npx vsce package -o "./go-${{ env.EXT_VERSION }}.vsix"
+
+      - name: create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ env.EXT_VERSION }}
+          draft: false
+          prerelease: ${{env.EXT_ISPREVIEW == 1}}
+
+      - name: upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./go-${{ env.EXT_VERSION }}.vsix
+          asset_name: go-${{ env.EXT_VERSION }}.vsix
+          asset_content_type: application/zip
+
+      - name: publish
+        if: env.EXT_ISPREVIEW != 1 && github.repository == 'golang/vscode-go'
+        run: npx vsce publish -i "./go-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VSCE_TOKEN }}"
+
+# TODO: check if the commit is in green state. (test-long.yml results)
+=======
       - name: package
-        uses: lannonbr/vsce-action@0f3391ee0477b08fae949eb0a875e91e6d20b075
+        uses: lannonbr/vsce-action@704da577da0f27de5cdb4ae018374c2f08b5f523
         with:
           args: "package"
 
@@ -102,10 +157,12 @@ jobs:
 
       - name: publish
         if: env.EXT_ISPREVIEW != 1 && github.repository == 'golang/vscode-go'
-        uses: lannonbr/vsce-action@0f3391ee0477b08fae949eb0a875e91e6d20b075
+        uses: lannonbr/vsce-action@704da577da0f27de5cdb4ae018374c2f08b5f523
         with:
           args: "publish -p $VSCE_TOKEN"
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
 
 # TODO: check if the commit is in green state. (test-long.yml results)
+# TODO: after publishing, create a gerrit CL to update 'latest' branch if VERSION is for a stable version.
+>>>>>>> origin/dev.go2go

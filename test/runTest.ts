@@ -1,7 +1,12 @@
+<<<<<<< HEAD
 /* eslint-disable no-process-exit */
 /* eslint-disable node/no-unpublished-import */
 import * as path from 'path';
+import { runTests } from '@vscode/test-electron';
+=======
+import * as path from 'path';
 import { runTests } from 'vscode-test';
+>>>>>>> origin/dev.go2go
 
 async function main() {
 	// We are in test mode.
@@ -30,6 +35,7 @@ async function main() {
 			extensionTestsPath,
 			launchArgs: [
 				'--disable-extensions',
+				'--profile-temp',
 				`--user-data-dir=${extensionDevelopmentPath}/.user-data-dir-test`,
 				// https://github.com/microsoft/vscode/issues/115794#issuecomment-774283222
 				'--force-disable-user-env'
@@ -51,6 +57,7 @@ async function main() {
 			extensionTestsPath: path.resolve(__dirname, './gopls/index'),
 			launchArgs: [
 				'--disable-extensions', // disable all other extensions
+				'--profile-temp',
 				`--user-data-dir=${extensionDevelopmentPath}/.user-data-dir-test`,
 				// https://github.com/microsoft/vscode/issues/115794#issuecomment-774283222
 				'--force-disable-user-env'

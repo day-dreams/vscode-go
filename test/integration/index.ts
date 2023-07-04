@@ -8,6 +8,7 @@ import glob from 'glob';
 import Mocha from 'mocha';
 import * as path from 'path';
 export function run(): Promise<void> {
+<<<<<<< HEAD
 	const options: Mocha.MochaOptions = {
 		grep: process.env.MOCHA_GREP,
 		ui: 'tdd'
@@ -16,6 +17,11 @@ export function run(): Promise<void> {
 		options.timeout = Number(process.env.MOCHA_TIMEOUT);
 	}
 	const mocha = new Mocha(options);
+=======
+	const mocha = new Mocha({
+		ui: 'tdd',
+	});
+>>>>>>> origin/dev.go2go
 
 	// @types/mocha is outdated
 	(mocha as any).color(true);
